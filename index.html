@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js GLTF Loader - Bar Models</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // シーン、カメラ、レンダラーの設定
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf0f0f0); // 薄いグレーの背景
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // カメラの位置を設定
+        camera.position.set(0, 5, 10);
+
+        // OrbitControlsを追加
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.autoRotate = true; // 自動回転を有効化
+        controls.autoRotateSpeed = 1.0; // 回転速度
+
+        // ライトを追加
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+
+        // GLTFローダーを作成
+        const loader = new GLTFLoader();
+
+        // 3つのGLTFファイルを読み込む
+        const modelUrls = ['fs4030_arm_bar_1.gltf', 'fs4030_arm_bar_2.gltf', 'fs4030_arm_bar_3.gltf',
+            'fs4030_arm_underbody_1.gltf', 'fs4030_arm_underbody_2.gltf', 'fs4030_arm_underbody_3.gltf'
+        ];
+        const loadedModels = [];
+
+        async function loadModel(url, rotation = 0, position = { x: 0, y: 0, z: 0 }, color = 0xffffff) {
+            try {
+                const gltf = await loader.loadAsync(url);
+                const model = gltf.scene;
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        // メッシュのマテリアルが配列の場合
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach((material) => {
+                                material.color.setHex(color); // 赤色に設定
+                            });
+                        } else {
+                            // メッシュのマテリアルが単一の場合
+                            child.material.color.setHex(color); // 赤色に設定
+                        }
+                    }
+                });
+                scene.add(model);
+
+                // モデルの境界ボックスを計算
+                const box = new THREE.Box3().setFromObject(model);
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+
+                // モデルを中心に配置
+                model.position.sub(center);
+                model.position.y = size.y / 2;
+
+                // モデルを回転
+                model.rotation.y = rotation;
+
+                // モデルを移動
+                model.position.x = position.x;
+                model.position.y = position.y;
+                model.position.z = position.z;
+
+                loadedModels.push({ model, center, size });
+
+                console.log('Model loaded:', url);
+            } catch (error) {
+                console.error('An error happened', error);
+            }
+        }
+
+        async function load_servo_steer_bar() {
+            await loadModel(modelUrls[0], 0, { x: 0, y: 0, z: 0 }, 0xff0000);
+            await loadModel(modelUrls[1], 0, { x: 0, y: 0, z: 0 }, 0x00ff00);
+            await loadModel(modelUrls[0], Math.PI, { x: 0, y: 0, z: 0 }, 0x0000ff);
+            await loadModel(modelUrls[2], 0, { x: 0, y: 0, z: 0 }, 0xffff00);
+            await loadModel(modelUrls[2], 0, { x: 0, y: 0, z: 0 }, 0xff00ff);
+
+            // vehicle_width = 20;
+            const arm_bar_length = 10;
+            loadedModels[3].model.scale.z = loadedModels[3].size.z * arm_bar_length;
+            loadedModels[4].model.scale.z = loadedModels[4].size.z * arm_bar_length;
+
+            loadedModels[3].model.position.z = -(loadedModels[1].size.z/2 + loadedModels[4].model.scale.z/2);
+            loadedModels[4].model.position.z = (loadedModels[1].size.z/2 + loadedModels[4].model.scale.z/2);
+            loadedModels[0].model.position.z = - (loadedModels[0].size.z / 2 + loadedModels[3].model.scale.z + loadedModels[1].size.z / 2);
+            loadedModels[2].model.position.z = (loadedModels[2].size.z / 2 + loadedModels[3].model.scale.z + loadedModels[1].size.z / 2);
+
+            adjustCameraPosition();
+        }
+
+        async function load_Steer_body() {
+            await loadModel(modelUrls[3], 0, { x: 0, y: 0, z: 0 }, 0xff0000);
+            await loadModel(modelUrls[4], 0, { x: 0, y: 0, z: 0 }, 0x00ff00);
+            await loadModel(modelUrls[3], Math.PI, { x: 0, y: 0, z: 0 }, 0x0000ff);
+            await loadModel(modelUrls[5], 0, { x: 0, y: 0, z: 0 }, 0xffff00);
+            await loadModel(modelUrls[5], 0, { x: 0, y: 0, z: 0 }, 0xff00ff);
+
+            // vehicle_width = 20;
+            const arm_bar_length = 10;
+            loadedModels[3].model.scale.z = loadedModels[3].size.z * arm_bar_length;
+            loadedModels[4].model.scale.z = loadedModels[4].size.z * arm_bar_length;
+
+            loadedModels[3].model.position.z = -(loadedModels[1].size.z/2 + loadedModels[4].model.scale.z/2);
+            loadedModels[4].model.position.z = (loadedModels[1].size.z/2 + loadedModels[4].model.scale.z/2);
+            loadedModels[0].model.position.z = - (loadedModels[0].size.z / 2 + loadedModels[3].model.scale.z + loadedModels[1].size.z / 2);
+            loadedModels[2].model.position.z = (loadedModels[2].size.z / 2 + loadedModels[3].model.scale.z + loadedModels[1].size.z / 2);
+
+            adjustCameraPosition();
+        }
+
+
+        function adjustCameraPosition() {
+            const box = new THREE.Box3();
+            loadedModels.forEach(modeldata => {
+                box.expandByObject(modeldata.model);
+            });
+
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const fov = camera.fov * (Math.PI / 180);
+            let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 2.5;
+
+            camera.position.set(center.x, center.y, center.z + cameraZ);
+            camera.lookAt(center);
+            controls.target.copy(center);
+
+            // 境界ボックスの対角線の長さを計算
+            const diagonal = new THREE.Vector3().subVectors(box.max, box.min).length();
+
+            // カメラの遠方クリッピング面を調整
+            camera.far = diagonal * 100;
+            camera.updateProjectionMatrix();
+
+            // コントロールを更新
+            controls.maxDistance = diagonal * 10;
+            controls.update();
+        }
+
+        // アニメーションループ
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // モデルを読み込んでからアニメーションを開始
+        load_Steer_body().then(() => {
+            animate();
+        });
+
+        // ウィンドウのリサイズに対応
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+
+</html>
