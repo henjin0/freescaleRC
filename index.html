@@ -64,7 +64,8 @@
 
         // 3つのGLTFファイルを読み込む
         const modelUrls = ['fs4030_arm_bar_1.gltf', 'fs4030_arm_bar_2.gltf', 'fs4030_arm_bar_3.gltf',
-            'fs4030_arm_underbody_1.gltf', 'fs4030_arm_underbody_2.gltf', 'fs4030_arm_underbody_3.gltf'
+            'fs4030_arm_underbody_1.gltf', 'fs4030_arm_underbody_2.gltf', 'fs4030_arm_underbody_3.gltf',
+            'fs4030_chasis_steer_1.gltf', 'fs4030_chasis_steer_2.gltf', 'fs4030_chasis_steer_3.gltf'
         ];
         const loadedModels = [];
 
@@ -152,6 +153,26 @@
             adjustCameraPosition();
         }
 
+        async function load_steer_chasis() {
+            await loadModel(modelUrls[6], 0, { x: 0, y: 0, z: 0 }, 0xff0000);
+            await loadModel(modelUrls[7], 0, { x: 0, y: 0, z: 0 }, 0x00ff00);
+            await loadModel(modelUrls[6], Math.PI, { x: 0, y: 0, z: 0 }, 0x0000ff);
+            await loadModel(modelUrls[8], 0, { x: 0, y: 0, z: 0 }, 0xffff00);
+            await loadModel(modelUrls[8], 0, { x: 0, y: 0, z: 0 }, 0xff00ff);
+
+            // vehicle_width = 20;
+            const arm_bar_length = 10;
+            loadedModels[3].model.scale.z = loadedModels[3].size.z * arm_bar_length;
+            loadedModels[4].model.scale.z = loadedModels[4].size.z * arm_bar_length;
+
+            loadedModels[3].model.position.z = -(loadedModels[1].size.z/2 + loadedModels[4].model.scale.z/2);
+            loadedModels[4].model.position.z = (loadedModels[1].size.z/2 + loadedModels[4].model.scale.z/2);
+            loadedModels[0].model.position.z = - (loadedModels[0].size.z / 2 + loadedModels[3].model.scale.z + loadedModels[1].size.z / 2);
+            loadedModels[2].model.position.z = (loadedModels[2].size.z / 2 + loadedModels[3].model.scale.z + loadedModels[1].size.z / 2);
+
+            adjustCameraPosition();
+        }
+
 
         function adjustCameraPosition() {
             const box = new THREE.Box3();
@@ -190,7 +211,7 @@
         }
 
         // モデルを読み込んでからアニメーションを開始
-        load_Steer_body().then(() => {
+        load_steer_chasis().then(() => {
             animate();
         });
 
