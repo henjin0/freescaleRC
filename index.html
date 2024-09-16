@@ -62,13 +62,18 @@
 
         const modelUrls = ['fs4030_arm_bar_1.gltf', 'fs4030_arm_bar_2.gltf', 'fs4030_arm_bar_3.gltf',
             'fs4030_arm_underbody_1.gltf', 'fs4030_arm_underbody_2.gltf', 'fs4030_arm_underbody_3.gltf',
-            'fs4030_chasis_steer_1.gltf', 'fs4030_chasis_steer_2.gltf', 'fs4030_chasis_steer_3.gltf'
+            'fs4030_chasis_steer_1.gltf', 'fs4030_chasis_steer_2.gltf', 'fs4030_chasis_steer_3.gltf',
+            'n20_motor_holder.gltf', 'n20_motor_holder_block.gltf'
         ];
         const loadedModels = [];
 
         // GUI用のパラメータ
         const params = {
-            arm_bar_length: 10
+            arm_bar_length: 10,
+            chassis_length_1: 10,
+            chassis_length_2: 10,
+            stage_width_1: 10,
+            stage_width_2:10
         };
 
         async function loadModel(url, rotation = 0, position = { x: 0, y: 0, z: 0 }, color = 0xffffff) {
@@ -109,40 +114,44 @@
             }
         }
 
+        async function load_servo_steer_bar() {
+            await loadModel(modelUrls[0], 0, { x: 10, y: -14, z: 0 }, 0xff0000);
+            await loadModel(modelUrls[1], Math.PI, { x: 10, y: -14, z: 0 }, 0x00ff00);
+            await loadModel(modelUrls[0], Math.PI, { x: 10, y: -14, z: 0 }, 0x0000ff);
+            await loadModel(modelUrls[2], Math.PI, { x: 10, y: -14, z: 0 }, 0xffff00);
+            await loadModel(modelUrls[2], Math.PI, { x: 10, y: -14, z: 0 }, 0xff00ff);
+
+            servo_steer_bar_update_positions(0,5.5);
+            adjustCameraPosition();
+        }
+
+        async function load_steer_body() {
+            await loadModel(modelUrls[3], 0, { x: 0, y: -12, z: 0 }, 0xff0000);
+            await loadModel(modelUrls[4], 0, { x: 0, y: -12, z: 0 }, 0x00ff00);
+            await loadModel(modelUrls[3], Math.PI, { x: 0, y: -12, z: 0 }, 0x0000ff);
+            await loadModel(modelUrls[5], 0, { x: 0, y: -12, z: 0 }, 0xffff00);
+            await loadModel(modelUrls[5], 0, { x: 0, y: -12, z: 0 }, 0xff00ff);
+
+            steer_body_update_positions(5);
+            adjustCameraPosition();
+        }
+
         async function load_steer_chasis() {
             await loadModel(modelUrls[6], 0, { x: 0, y: 0, z: 0 }, 0xff0000);
             await loadModel(modelUrls[7], 0, { x: 0, y: 0, z: 0 }, 0x00ff00);
             await loadModel(modelUrls[6], Math.PI, { x: 0, y: 0, z: 0 }, 0x0000ff);
             await loadModel(modelUrls[8], 0, { x: 0, y: 0, z: 0 }, 0xffff00);
             await loadModel(modelUrls[8], 0, { x: 0, y: 0, z: 0 }, 0xff00ff);
+            await loadModel(modelUrls[9], 0, { x:0, y: -3.3, z: 0 }, 0xf0f0f0);
+            await loadModel(modelUrls[10], 0, { x:0, y: -3.3, z: 0 }, 0x44AAFF);
+            await loadModel(modelUrls[10], 0, { x:0, y: -3.3, z: 0 }, 0xFFAABB);
 
-            updateModelPositions(10);
+            steer_chasis_update_positions(10);
             adjustCameraPosition();
         }
 
-        async function load_servo_steer_bar() {
-            await loadModel(modelUrls[0], 0, { x: 0, y: 10, z: 0 }, 0xff0000);
-            await loadModel(modelUrls[1], 0, { x: 0, y: 10, z: 0 }, 0x00ff00);
-            await loadModel(modelUrls[0], Math.PI, { x: 0, y: 10, z: 0 }, 0x0000ff);
-            await loadModel(modelUrls[2], 0, { x: 0, y: 10, z: 0 }, 0xffff00);
-            await loadModel(modelUrls[2], 0, { x: 0, y: 10, z: 0 }, 0xff00ff);
-
-            updateModelPositions(0,5.5);
-            adjustCameraPosition();
-        }
-
-        async function load_Steer_body() {
-            await loadModel(modelUrls[3], 0, { x: 0, y: -10, z: 0 }, 0xff0000);
-            await loadModel(modelUrls[4], 0, { x: 0, y: -10, z: 0 }, 0x00ff00);
-            await loadModel(modelUrls[3], Math.PI, { x: 0, y: -10, z: 0 }, 0x0000ff);
-            await loadModel(modelUrls[5], 0, { x: 0, y: -10, z: 0 }, 0xffff00);
-            await loadModel(modelUrls[5], 0, { x: 0, y: -10, z: 0 }, 0xff00ff);
-
-            updateModelPositions(5);
-            adjustCameraPosition();
-        }
-
-        function updateModelPositions(positionNum,adjustAddBarLength=0) {
+        
+        function servo_steer_bar_update_positions(positionNum,adjustAddBarLength=0) {
 
             console.log(loadedModels[positionNum+1].size.z)
 
@@ -153,6 +162,43 @@
             loadedModels[positionNum+4].model.position.z = (loadedModels[positionNum+1].size.z/2 + loadedModels[positionNum+4].model.scale.z/2);
             loadedModels[positionNum+0].model.position.z = - (loadedModels[positionNum+0].size.z / 2 + loadedModels[positionNum+3].model.scale.z + loadedModels[positionNum+1].size.z / 2);
             loadedModels[positionNum+2].model.position.z = (loadedModels[positionNum+2].size.z / 2 + loadedModels[positionNum+3].model.scale.z + loadedModels[positionNum+1].size.z / 2);
+        }
+
+        function steer_body_update_positions(positionNum,adjustAddBarLength=0) {
+
+            console.log(loadedModels[positionNum+1].size.z)
+
+            loadedModels[positionNum+3].model.scale.z = loadedModels[positionNum+3].size.z * params.arm_bar_length+adjustAddBarLength;
+            loadedModels[positionNum+4].model.scale.z = loadedModels[positionNum+4].size.z * params.arm_bar_length+adjustAddBarLength;
+
+            loadedModels[positionNum+3].model.position.z = -(loadedModels[positionNum+1].size.z/2 + loadedModels[positionNum+4].model.scale.z/2);
+            loadedModels[positionNum+4].model.position.z = (loadedModels[positionNum+1].size.z/2 + loadedModels[positionNum+4].model.scale.z/2);
+            loadedModels[positionNum+0].model.position.z = - (loadedModels[positionNum+0].size.z / 2 + loadedModels[positionNum+3].model.scale.z + loadedModels[positionNum+1].size.z / 2);
+            loadedModels[positionNum+2].model.position.z = (loadedModels[positionNum+2].size.z / 2 + loadedModels[positionNum+3].model.scale.z + loadedModels[positionNum+1].size.z / 2);
+        }
+
+        function steer_chasis_update_positions(positionNum,adjustAddBarLength=0) {
+
+            console.log(loadedModels[positionNum+1].size.z)
+
+            loadedModels[positionNum+3].model.scale.z = loadedModels[positionNum+3].size.z * params.arm_bar_length+adjustAddBarLength;
+            loadedModels[positionNum+4].model.scale.z = loadedModels[positionNum+4].size.z * params.arm_bar_length+adjustAddBarLength;
+
+            loadedModels[positionNum+3].model.position.z = -(loadedModels[positionNum+1].size.z/2 + loadedModels[positionNum+4].model.scale.z/2);
+            loadedModels[positionNum+4].model.position.z = (loadedModels[positionNum+1].size.z/2 + loadedModels[positionNum+4].model.scale.z/2);
+            loadedModels[positionNum+0].model.position.z = - (loadedModels[positionNum+0].size.z / 2 + loadedModels[positionNum+3].model.scale.z + loadedModels[positionNum+1].size.z / 2);
+            loadedModels[positionNum+2].model.position.z = (loadedModels[positionNum+2].size.z / 2 + loadedModels[positionNum+3].model.scale.z + loadedModels[positionNum+1].size.z / 2);
+        
+            const adjust_chassis_length = 17.3;
+            loadedModels[positionNum+6].model.scale.z = loadedModels[positionNum+6].size.z * params.stage_width_1;
+            loadedModels[positionNum+6].model.scale.x = loadedModels[positionNum+6].size.x * params.chassis_length_1;
+            loadedModels[positionNum+6].model.position.x =  adjust_chassis_length + params.chassis_length_1/2;
+        
+            loadedModels[positionNum+7].model.scale.z = loadedModels[positionNum+7].size.z * params.stage_width_2;
+            loadedModels[positionNum+7].model.scale.x = loadedModels[positionNum+7].size.x * params.chassis_length_2;
+            loadedModels[positionNum+7].model.position.x =  loadedModels[positionNum+6].model.position.x + loadedModels[positionNum+6].model.scale.x/2 +  loadedModels[positionNum+7].model.scale.x/2;
+        
+            loadedModels[positionNum+5].model.position.x =  loadedModels[positionNum+7].model.position.x + loadedModels[positionNum+7].model.scale.x/2 +  loadedModels[positionNum+5].model.scale.x/2-0.5;
         }
 
         function adjustCameraPosition() {
@@ -190,15 +236,39 @@
         // GUIの設定
         function setupGUI() {
             const gui = new GUI();
-            gui.add(params, 'arm_bar_length', 1, 20).onChange(() => {
-                updateModelPositions(0,5.5);
-                updateModelPositions(5);
-                updateModelPositions(10);
+            gui.add(params, 'arm_bar_length', 1, 50).onChange(() => {
+                servo_steer_bar_update_positions(0,5.5);
+                steer_body_update_positions(5);
+                steer_chasis_update_positions(10);
+            });
+
+            gui.add(params, 'chassis_length_1', 0, 100).onChange(() => {
+                servo_steer_bar_update_positions(0,5.5);
+                steer_body_update_positions(5);
+                steer_chasis_update_positions(10);
+            });
+
+            gui.add(params, 'chassis_length_2', 0, 100).onChange(() => {
+                servo_steer_bar_update_positions(0,5.5);
+                steer_body_update_positions(5);
+                steer_chasis_update_positions(10);
+            });
+
+            gui.add(params, 'stage_width_1', 0, 100).onChange(() => {
+                servo_steer_bar_update_positions(0,5.5);
+                steer_body_update_positions(5);
+                steer_chasis_update_positions(10);
+            });
+
+            gui.add(params, 'stage_width_2', 0, 100).onChange(() => {
+                servo_steer_bar_update_positions(0,5.5);
+                steer_body_update_positions(5);
+                steer_chasis_update_positions(10);
             });
         }
 
         await load_servo_steer_bar()
-        await load_Steer_body()
+        await load_steer_body()
         await load_steer_chasis()
         await setupGUI();
         await animate();
@@ -208,6 +278,7 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
+        
     </script>
 </body>
 
