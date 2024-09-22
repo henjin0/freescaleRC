@@ -18,7 +18,8 @@
 
 <body>
     <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script type="importmap">
         {
             "imports": {
@@ -33,10 +34,16 @@
         import * as THREE from 'three';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+        import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+        
         import GUI from 'lil-gui';
 
         // シーン、カメラ、レンダラーの設定
         const scene = new THREE.Scene();
+        const scene_servo_steer_bar = new THREE.Scene();
+        const scene_steer_body = new THREE.Scene();
+        const scene_steer_chasis = new THREE.Scene();
         scene.background = new THREE.Color(0xf0f0f0);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -59,6 +66,7 @@
         scene.add(directionalLight);
 
         const loader = new GLTFLoader();
+        const exporter = new OBJExporter();
 
         const modelUrls = ['fs4030_arm_bar_1.gltf', 'fs4030_arm_bar_2.gltf', 'fs4030_arm_bar_3.gltf',
             'fs4030_arm_underbody_1.gltf', 'fs4030_arm_underbody_2.gltf', 'fs4030_arm_underbody_3.gltf',
@@ -66,6 +74,7 @@
             'n20_motor_holder.gltf', 'n20_motor_holder_block.gltf'
         ];
         const loadedModels = [];
+        const loadedModelsClone = [];
 
         // GUI用のパラメータ
         const params = {
@@ -73,10 +82,39 @@
             chassis_length_1: 10,
             chassis_length_2: 10,
             stage_width_1: 10,
-            stage_width_2:10
+            stage_width_2:10,
+            download:function(){
+               
+                const exporter = new OBJExporter();
+                const objdata_servo_steer_bar = exporter.parse( scene_servo_steer_bar );
+                const objdata_steer_body = exporter.parse( scene_steer_body );
+                const objdata_steer_chasis = exporter.parse( scene_steer_chasis  );
+
+                var zip = new JSZip();
+                zip.file("servo_steer_bar.obj", objdata_servo_steer_bar);
+                zip.file("servo_steer_body.obj", objdata_steer_body);
+                zip.file("objdata_steer_chasis.obj", objdata_steer_chasis);
+
+                zip.generateAsync({type:"blob"})
+                    .then(function(content) {
+                        // see FileSaver.js
+                        saveAs(content, "tinytrekker-1S.zip");
+                    });
+
+                // const blob = new Blob([objdata_servo_steer_bar], { type: 'text/plain' });
+                // const url = URL.createObjectURL(blob);
+                // const a = document.createElement('a');
+                // a.href = url;
+                // a.download = 'download.obj';
+                // document.body.appendChild(a);
+                // a.click();
+                // document.body.removeChild(a);
+                // URL.revokeObjectURL(url);
+            }
+           
         };
 
-        async function loadModel(url, rotation = 0, position = { x: 0, y: 0, z: 0 }, color = 0xffffff) {
+        async function loadModel(scene, url, rotation = 0, position = { x: 0, y: 0, z: 0 }, color = 0xffffff) {
             try {
                 const gltf = await loader.loadAsync(url);
                 const model = gltf.scene;
@@ -107,7 +145,6 @@
                 model.position.z = position.z;
 
                 loadedModels.push({ model, center, size });
-
                 console.log('Model loaded:', url);
             } catch (error) {
                 console.error('An error happened', error);
@@ -115,44 +152,45 @@
         }
 
         async function load_servo_steer_bar() {
-            await loadModel(modelUrls[0], 0, { x: 10, y: -14, z: 0 }, 0xff0000);
-            await loadModel(modelUrls[1], Math.PI, { x: 10, y: -14, z: 0 }, 0x00ff00);
-            await loadModel(modelUrls[0], Math.PI, { x: 10, y: -14, z: 0 }, 0x0000ff);
-            await loadModel(modelUrls[2], Math.PI, { x: 10, y: -14, z: 0 }, 0xffff00);
-            await loadModel(modelUrls[2], Math.PI, { x: 10, y: -14, z: 0 }, 0xff00ff);
+            await loadModel(scene_servo_steer_bar,modelUrls[0], 0, { x: 10, y: -14, z: 0 }, 0xff0000);
+            await loadModel(scene_servo_steer_bar, modelUrls[1], Math.PI, { x: 10, y: -14, z: 0 }, 0x00ff00);
+            await loadModel(scene_servo_steer_bar,modelUrls[0], Math.PI, { x: 10, y: -14, z: 0 }, 0x0000ff);
+            await loadModel(scene_servo_steer_bar, modelUrls[2], Math.PI, { x: 10, y: -14, z: 0 }, 0xffff00);
+            await loadModel(scene_servo_steer_bar, modelUrls[2], Math.PI, { x: 10, y: -14, z: 0 }, 0xff00ff);
+            scene.add(scene_servo_steer_bar);
 
             servo_steer_bar_update_positions(0,5.5);
             adjustCameraPosition();
         }
 
         async function load_steer_body() {
-            await loadModel(modelUrls[3], 0, { x: 0, y: -12, z: 0 }, 0xff0000);
-            await loadModel(modelUrls[4], 0, { x: 0, y: -12, z: 0 }, 0x00ff00);
-            await loadModel(modelUrls[3], Math.PI, { x: 0, y: -12, z: 0 }, 0x0000ff);
-            await loadModel(modelUrls[5], 0, { x: 0, y: -12, z: 0 }, 0xffff00);
-            await loadModel(modelUrls[5], 0, { x: 0, y: -12, z: 0 }, 0xff00ff);
+            await loadModel(scene_steer_body, modelUrls[3], 0, { x: 0, y: -12, z: 0 }, 0xff0000);
+            await loadModel(scene_steer_body, modelUrls[4], 0, { x: 0, y: -12, z: 0 }, 0x00ff00);
+            await loadModel(scene_steer_body, modelUrls[3], Math.PI, { x: 0, y: -12, z: 0 }, 0x0000ff);
+            await loadModel(scene_steer_body, modelUrls[5], 0, { x: 0, y: -12, z: 0 }, 0xffff00);
+            await loadModel(scene_steer_body, modelUrls[5], 0, { x: 0, y: -12, z: 0 }, 0xff00ff);
+            scene.add(scene_steer_body)
 
             steer_body_update_positions(5);
             adjustCameraPosition();
         }
 
         async function load_steer_chasis() {
-            await loadModel(modelUrls[6], 0, { x: 0, y: 0, z: 0 }, 0xff0000);
-            await loadModel(modelUrls[7], 0, { x: 0, y: 0, z: 0 }, 0x00ff00);
-            await loadModel(modelUrls[6], Math.PI, { x: 0, y: 0, z: 0 }, 0x0000ff);
-            await loadModel(modelUrls[8], 0, { x: 0, y: 0, z: 0 }, 0xffff00);
-            await loadModel(modelUrls[8], 0, { x: 0, y: 0, z: 0 }, 0xff00ff);
-            await loadModel(modelUrls[9], 0, { x:0, y: -3.3, z: 0 }, 0xf0f0f0);
-            await loadModel(modelUrls[10], 0, { x:0, y: -3.3, z: 0 }, 0x44AAFF);
-            await loadModel(modelUrls[10], 0, { x:0, y: -3.3, z: 0 }, 0xFFAABB);
+            await loadModel(scene_steer_chasis, modelUrls[6], 0, { x: 0, y: 0, z: 0 }, 0xff0000);
+            await loadModel(scene_steer_chasis, modelUrls[7], 0, { x: 0, y: 0, z: 0 }, 0x00ff00);
+            await loadModel(scene_steer_chasis, modelUrls[6], Math.PI, { x: 0, y: 0, z: 0 }, 0x0000ff);
+            await loadModel(scene_steer_chasis, modelUrls[8], 0, { x: 0, y: 0, z: 0 }, 0xffff00);
+            await loadModel(scene_steer_chasis, modelUrls[8], 0, { x: 0, y: 0, z: 0 }, 0xff00ff);
+            await loadModel(scene_steer_chasis, modelUrls[9], 0, { x:0, y: -3.3, z: 0 }, 0xf0f0f0);
+            await loadModel(scene_steer_chasis, modelUrls[10], 0, { x:0, y: -3.3, z: 0 }, 0x44AAFF);
+            await loadModel(scene_steer_chasis, modelUrls[10], 0, { x:0, y: -3.3, z: 0 }, 0xFFAABB);
+            scene.add(scene_steer_chasis, )
 
             steer_chasis_update_positions(10);
             adjustCameraPosition();
         }
 
-        
         function servo_steer_bar_update_positions(positionNum,adjustAddBarLength=0) {
-
             console.log(loadedModels[positionNum+1].size.z)
 
             loadedModels[positionNum+3].model.scale.z = loadedModels[positionNum+3].size.z * params.arm_bar_length+adjustAddBarLength;
@@ -175,6 +213,7 @@
             loadedModels[positionNum+4].model.position.z = (loadedModels[positionNum+1].size.z/2 + loadedModels[positionNum+4].model.scale.z/2);
             loadedModels[positionNum+0].model.position.z = - (loadedModels[positionNum+0].size.z / 2 + loadedModels[positionNum+3].model.scale.z + loadedModels[positionNum+1].size.z / 2);
             loadedModels[positionNum+2].model.position.z = (loadedModels[positionNum+2].size.z / 2 + loadedModels[positionNum+3].model.scale.z + loadedModels[positionNum+1].size.z / 2);
+
         }
 
         function steer_chasis_update_positions(positionNum,adjustAddBarLength=0) {
@@ -199,6 +238,7 @@
             loadedModels[positionNum+7].model.position.x =  loadedModels[positionNum+6].model.position.x + loadedModels[positionNum+6].model.scale.x/2 +  loadedModels[positionNum+7].model.scale.x/2;
         
             loadedModels[positionNum+5].model.position.x =  loadedModels[positionNum+7].model.position.x + loadedModels[positionNum+7].model.scale.x/2 +  loadedModels[positionNum+5].model.scale.x/2-0.5;
+
         }
 
         function adjustCameraPosition() {
@@ -265,6 +305,8 @@
                 steer_body_update_positions(5);
                 steer_chasis_update_positions(10);
             });
+
+            gui.add(params, 'download' );
         }
 
         await load_servo_steer_bar()
