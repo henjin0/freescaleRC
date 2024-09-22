@@ -13,6 +13,13 @@
         canvas {
             display: block;
         }
+        .lil-gui {
+            --font-size: 16px;
+            --input-font-size: 16px;
+            --padding: 6pt;
+            --spacing: 7pt;
+            --widget-height: 30px;
+        }
     </style>
 </head>
 
@@ -275,7 +282,10 @@
 
         // GUIの設定
         function setupGUI() {
-            const gui = new GUI();
+            const gui = new GUI({width: window.innerWidth/3.7});
+            const guiElement = gui.domElement;
+            
+
             gui.add(params, 'arm_bar_length', 1, 50).onChange(() => {
                 servo_steer_bar_update_positions(0,5.5);
                 steer_body_update_positions(5);
