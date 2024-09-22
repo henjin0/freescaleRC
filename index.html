@@ -51,6 +51,13 @@
         const scene_servo_steer_bar = new THREE.Scene();
         const scene_steer_body = new THREE.Scene();
         const scene_steer_chasis = new THREE.Scene();
+        const scene_arm2 = new THREE.Scene();
+        const scene_motor_gear = new THREE.Scene();
+        const scene_servo_arm = new THREE.Scene();
+        const scene_shaft_gear = new THREE.Scene();
+        const scene_tyre_stopper = new THREE.Scene();
+        const scene_tyre = new THREE.Scene();
+
         scene.background = new THREE.Color(0xf0f0f0);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -95,31 +102,47 @@
                 const exporter = new OBJExporter();
                 const objdata_servo_steer_bar = exporter.parse( scene_servo_steer_bar );
                 const objdata_steer_body = exporter.parse( scene_steer_body );
-                const objdata_steer_chasis = exporter.parse( scene_steer_chasis  );
+                const objdata_steer_chasis = exporter.parse( scene_steer_chasis );
+
+                const objdata_arm2 = exporter.parse( scene_arm2 );
+                const objdata_motor_gear = exporter.parse( scene_motor_gear );
+                const objdata_servo_arm = exporter.parse( scene_servo_arm );
+                const objdata_shaft_gear = exporter.parse( scene_shaft_gear );
+                const objdata_tyre_stopper = exporter.parse( scene_tyre_stopper );
+                const objdata_tyre = exporter.parse( scene_tyre );
 
                 var zip = new JSZip();
-                zip.file("servo_steer_bar.obj", objdata_servo_steer_bar);
-                zip.file("servo_steer_body.obj", objdata_steer_body);
-                zip.file("objdata_steer_chasis.obj", objdata_steer_chasis);
+                zip.file("arm1.obj", objdata_servo_steer_bar);
+                zip.file("main_under.obj", objdata_steer_body);
+                zip.file("main.obj", objdata_steer_chasis);
+                zip.file("arm2.obj", objdata_arm2);
+                zip.file("motor_gear.obj", objdata_motor_gear);
+                zip.file("servo_arm.obj", objdata_servo_arm);
+                zip.file("shaft_gear.obj", objdata_shaft_gear);
+                zip.file("tyre_stopper.obj", objdata_tyre_stopper);
+                zip.file("tyre.obj", objdata_tyre);
+                zip.file("README（初めにお読みください）.txt", "組立方法や必要な部品に関してはこちらを参照してください。 https://github.com/henjin0/TinyTreckker-1S");
 
                 zip.generateAsync({type:"blob"})
                     .then(function(content) {
                         // see FileSaver.js
                         saveAs(content, "tinytrekker-1S.zip");
                     });
-
-                // const blob = new Blob([objdata_servo_steer_bar], { type: 'text/plain' });
-                // const url = URL.createObjectURL(blob);
-                // const a = document.createElement('a');
-                // a.href = url;
-                // a.download = 'download.obj';
-                // document.body.appendChild(a);
-                // a.click();
-                // document.body.removeChild(a);
-                // URL.revokeObjectURL(url);
             }
            
         };
+
+        async function loadStaticModel(scene, url){
+            const gltf = await loader.loadAsync(url);
+            const model = gltf.scene;
+            
+            model.traverse((child) => {
+                    if (child.isMesh) {
+                            child.material.color.setHex(0xffffff);
+                    }
+                });
+            scene.add(model);
+        }
 
         async function loadModel(scene, url, rotation = 0, position = { x: 0, y: 0, z: 0 }, color = 0xffffff) {
             try {
@@ -322,6 +345,14 @@
         await load_servo_steer_bar()
         await load_steer_body()
         await load_steer_chasis()
+        await loadStaticModel(scene_arm2, 'arm2.gltf');
+        await loadStaticModel(scene_motor_gear, 'motor_gear.gltf');
+        await loadStaticModel(scene_servo_arm, 'servo_arm.gltf');
+        await loadStaticModel(scene_shaft_gear, 'shaft_gear.gltf');
+        await loadStaticModel(scene_tyre_stopper, 'tyre_stopper.gltf');
+        await loadStaticModel(scene_tyre, 'tyre.gltf');
+
+
         await setupGUI();
         await animate();
         
