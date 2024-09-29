@@ -91,13 +91,28 @@
         const loadedModels = [];
         const loadedModelsClone = [];
 
+        const MIN_VEHICLE_LENGTH = 45.1;
+        const MIN_VEHICLE_WIDTH = 40.0;
+        const MIN_PLATE_A_WIDTH = 11;
+        const MIN_PLATE_B_WIDTH = 11;
+        let variable_length_width = {
+            arm_bar_length: (MIN_VEHICLE_WIDTH-30)/2,
+            chassis_length_1: 0,
+            chassis_length_2: 0,
+            padding_length: 0,
+            chassis_length_per:50,
+            stage_width_1: MIN_PLATE_A_WIDTH,
+            stage_width_2: MIN_PLATE_B_WIDTH
+        }
+
+
         // GUI用のパラメータ
         const params = {
-            arm_bar_length: 10,
-            chassis_length_1: 10,
-            chassis_length_2: 10,
-            stage_width_1: 10,
-            stage_width_2: 10,
+            vehicle_length: MIN_VEHICLE_LENGTH,
+            vehicle_width: MIN_VEHICLE_WIDTH,
+            plate_A_width: MIN_VEHICLE_WIDTH,
+            plate_B_width: MIN_VEHICLE_WIDTH,
+            plate_AB_per: 0,
             download: function () {
 
                 const exporter = new OBJExporter();
@@ -222,10 +237,8 @@
         }
 
         function servo_steer_bar_update_positions(positionNum, adjustAddBarLength = 0) {
-            console.log(loadedModels[positionNum + 1].size.z)
-
-            loadedModels[positionNum + 3].model.scale.z = loadedModels[positionNum + 3].size.z * params.arm_bar_length + adjustAddBarLength;
-            loadedModels[positionNum + 4].model.scale.z = loadedModels[positionNum + 4].size.z * params.arm_bar_length + adjustAddBarLength;
+            loadedModels[positionNum + 3].model.scale.z = loadedModels[positionNum + 3].size.z * variable_length_width.arm_bar_length + adjustAddBarLength;
+            loadedModels[positionNum + 4].model.scale.z = loadedModels[positionNum + 4].size.z * variable_length_width.arm_bar_length + adjustAddBarLength;
 
             loadedModels[positionNum + 3].model.position.z = -(loadedModels[positionNum + 1].size.z / 2 + loadedModels[positionNum + 4].model.scale.z / 2);
             loadedModels[positionNum + 4].model.position.z = (loadedModels[positionNum + 1].size.z / 2 + loadedModels[positionNum + 4].model.scale.z / 2);
@@ -234,11 +247,8 @@
         }
 
         function steer_body_update_positions(positionNum, adjustAddBarLength = 0) {
-
-            console.log(loadedModels[positionNum + 1].size.z)
-
-            loadedModels[positionNum + 3].model.scale.z = loadedModels[positionNum + 3].size.z * params.arm_bar_length + adjustAddBarLength;
-            loadedModels[positionNum + 4].model.scale.z = loadedModels[positionNum + 4].size.z * params.arm_bar_length + adjustAddBarLength;
+            loadedModels[positionNum + 3].model.scale.z = loadedModels[positionNum + 3].size.z * variable_length_width.arm_bar_length + adjustAddBarLength;
+            loadedModels[positionNum + 4].model.scale.z = loadedModels[positionNum + 4].size.z * variable_length_width.arm_bar_length + adjustAddBarLength;
 
             loadedModels[positionNum + 3].model.position.z = -(loadedModels[positionNum + 1].size.z / 2 + loadedModels[positionNum + 4].model.scale.z / 2);
             loadedModels[positionNum + 4].model.position.z = (loadedModels[positionNum + 1].size.z / 2 + loadedModels[positionNum + 4].model.scale.z / 2);
@@ -248,11 +258,8 @@
         }
 
         function steer_chasis_update_positions(positionNum, adjustAddBarLength = 0) {
-
-            console.log(loadedModels[positionNum + 1].size.z)
-
-            loadedModels[positionNum + 3].model.scale.z = loadedModels[positionNum + 3].size.z * params.arm_bar_length + adjustAddBarLength;
-            loadedModels[positionNum + 4].model.scale.z = loadedModels[positionNum + 4].size.z * params.arm_bar_length + adjustAddBarLength;
+            loadedModels[positionNum + 3].model.scale.z = loadedModels[positionNum + 3].size.z * variable_length_width.arm_bar_length + adjustAddBarLength;
+            loadedModels[positionNum + 4].model.scale.z = loadedModels[positionNum + 4].size.z * variable_length_width.arm_bar_length + adjustAddBarLength;
 
             loadedModels[positionNum + 3].model.position.z = -(loadedModels[positionNum + 1].size.z / 2 + loadedModels[positionNum + 4].model.scale.z / 2);
             loadedModels[positionNum + 4].model.position.z = (loadedModels[positionNum + 1].size.z / 2 + loadedModels[positionNum + 4].model.scale.z / 2);
@@ -260,12 +267,12 @@
             loadedModels[positionNum + 2].model.position.z = (loadedModels[positionNum + 2].size.z / 2 + loadedModels[positionNum + 3].model.scale.z + loadedModels[positionNum + 1].size.z / 2);
 
             const adjust_chassis_length = 17.3;
-            loadedModels[positionNum + 6].model.scale.z = loadedModels[positionNum + 6].size.z * params.stage_width_1;
-            loadedModels[positionNum + 6].model.scale.x = loadedModels[positionNum + 6].size.x * params.chassis_length_1;
-            loadedModels[positionNum + 6].model.position.x = adjust_chassis_length + params.chassis_length_1 / 2;
+            loadedModels[positionNum + 6].model.scale.z = loadedModels[positionNum + 6].size.z * variable_length_width.stage_width_1;
+            loadedModels[positionNum + 6].model.scale.x = loadedModels[positionNum + 6].size.x * variable_length_width.chassis_length_1;
+            loadedModels[positionNum + 6].model.position.x = adjust_chassis_length + variable_length_width.chassis_length_1 / 2;
 
-            loadedModels[positionNum + 7].model.scale.z = loadedModels[positionNum + 7].size.z * params.stage_width_2;
-            loadedModels[positionNum + 7].model.scale.x = loadedModels[positionNum + 7].size.x * params.chassis_length_2;
+            loadedModels[positionNum + 7].model.scale.z = loadedModels[positionNum + 7].size.z * variable_length_width.stage_width_2;
+            loadedModels[positionNum + 7].model.scale.x = loadedModels[positionNum + 7].size.x * variable_length_width.chassis_length_2;
             loadedModels[positionNum + 7].model.position.x = loadedModels[positionNum + 6].model.position.x + loadedModels[positionNum + 6].model.scale.x / 2 + loadedModels[positionNum + 7].model.scale.x / 2;
 
             loadedModels[positionNum + 5].model.position.x = loadedModels[positionNum + 7].model.position.x + loadedModels[positionNum + 7].model.scale.x / 2 + loadedModels[positionNum + 5].model.scale.x / 2 - 0.5;
@@ -310,35 +317,62 @@
             const guiElement = gui.domElement;
 
 
-            gui.add(params, 'arm_bar_length', 1, 50).onChange(() => {
-                servo_steer_bar_update_positions(0, 5.5);
-                steer_body_update_positions(5);
-                steer_chasis_update_positions(10);
-            });
+            gui.add(params, 'vehicle_length', MIN_VEHICLE_LENGTH, 200 , 0.1 )
+                .name( 'ホイールベース' )
+                .onChange( value => {
+                    variable_length_width.padding_length = value - MIN_VEHICLE_LENGTH;
+                    variable_length_width.chassis_length_1 = variable_length_width.padding_length*(100-variable_length_width.chassis_length_per)/100
+                    variable_length_width.chassis_length_2 = variable_length_width.padding_length*(variable_length_width.chassis_length_per)/100
 
-            gui.add(params, 'chassis_length_1', 0, 100).onChange(() => {
-                servo_steer_bar_update_positions(0, 5.5);
-                steer_body_update_positions(5);
-                steer_chasis_update_positions(10);
-            });
+		            servo_steer_bar_update_positions(0, 5.5);
+                    steer_body_update_positions(5);
+                    steer_chasis_update_positions(10);
+	            }); 
+            gui.add(params, 'vehicle_width', MIN_VEHICLE_WIDTH, 200 , 0.1 )
+                .name( 'トレッド幅' )
+                .onChange( value => {
 
-            gui.add(params, 'chassis_length_2', 0, 100).onChange(() => {
-                servo_steer_bar_update_positions(0, 5.5);
-                steer_body_update_positions(5);
-                steer_chasis_update_positions(10);
-            });
+                    const padding_width = value - MIN_VEHICLE_WIDTH;
+                    if(padding_width > 0){
+                        variable_length_width.arm_bar_length = ((MIN_VEHICLE_WIDTH+padding_width)-30)/2
+                    }
 
-            gui.add(params, 'stage_width_1', 0, 100).onChange(() => {
-                servo_steer_bar_update_positions(0, 5.5);
-                steer_body_update_positions(5);
-                steer_chasis_update_positions(10);
-            });
+		            servo_steer_bar_update_positions(0, 5.5);
+                    steer_body_update_positions(5);
+                    steer_chasis_update_positions(10);
+	            });
 
-            gui.add(params, 'stage_width_2', 0, 100).onChange(() => {
-                servo_steer_bar_update_positions(0, 5.5);
-                steer_body_update_positions(5);
-                steer_chasis_update_positions(10);
-            });
+            gui.add(params, "plate_A_width", MIN_PLATE_A_WIDTH, 200 , 0.1 )
+                .name( 'ステージA幅' )
+                .onChange( value => {
+                    variable_length_width.stage_width_1 = value;
+
+		            servo_steer_bar_update_positions(0, 5.5);
+                    steer_body_update_positions(5);
+                    steer_chasis_update_positions(10);
+	            }); 
+            
+            gui.add(params, "plate_B_width", MIN_PLATE_B_WIDTH, 200 , 0.1 )
+                .name( 'ステージB幅' )
+                .onChange( value => {
+                    variable_length_width.stage_width_2 = value;
+
+		            servo_steer_bar_update_positions(0, 5.5);
+                    steer_body_update_positions(5);
+                    steer_chasis_update_positions(10);
+	            });
+
+            gui.add(params, "plate_AB_per", 10, 90 , 0.1 )
+                .name( 'A:B比率' )
+                .onChange( value => {
+                    variable_length_width.chassis_length_per = value;
+                    variable_length_width.chassis_length_1 = variable_length_width.padding_length*(100-variable_length_width.chassis_length_per)/100
+                    variable_length_width.chassis_length_2 = variable_length_width.padding_length*(variable_length_width.chassis_length_per)/100
+
+		            servo_steer_bar_update_positions(0, 5.5);
+                    steer_body_update_positions(5);
+                    steer_chasis_update_positions(10);
+	            });
 
             gui.add(params, 'download');
         }
