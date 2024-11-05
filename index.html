@@ -211,7 +211,7 @@
 
         async function load_steer_body() {
             await loadModel(scene_steer_body, modelUrls[3], 0, { x: 0, y: -12, z: 0 }, 0xff0000);
-            await loadModel(scene_steer_body, modelUrls[4], 0, { x: 0, y: -12, z: 0 }, 0x00ff00);
+            await loadModel(scene_steer_body, modelUrls[4], 0, { x: 0, y: -13.5, z: 0 }, 0x00ff00);
             await loadModel(scene_steer_body, modelUrls[3], Math.PI, { x: 0, y: -12, z: 0 }, 0x0000ff);
             await loadModel(scene_steer_body, modelUrls[5], 0, { x: 0, y: -12, z: 0 }, 0xffff00);
             await loadModel(scene_steer_body, modelUrls[5], 0, { x: 0, y: -12, z: 0 }, 0xff00ff);
@@ -250,10 +250,10 @@
             loadedModels[positionNum + 3].model.scale.z = loadedModels[positionNum + 3].size.z * variable_length_width.arm_bar_length + adjustAddBarLength;
             loadedModels[positionNum + 4].model.scale.z = loadedModels[positionNum + 4].size.z * variable_length_width.arm_bar_length + adjustAddBarLength;
 
-            loadedModels[positionNum + 3].model.position.z = -(loadedModels[positionNum + 1].size.z / 2 + loadedModels[positionNum + 4].model.scale.z / 2);
-            loadedModels[positionNum + 4].model.position.z = (loadedModels[positionNum + 1].size.z / 2 + loadedModels[positionNum + 4].model.scale.z / 2);
-            loadedModels[positionNum + 0].model.position.z = - (loadedModels[positionNum + 0].size.z / 2 + loadedModels[positionNum + 3].model.scale.z + loadedModels[positionNum + 1].size.z / 2);
-            loadedModels[positionNum + 2].model.position.z = (loadedModels[positionNum + 2].size.z / 2 + loadedModels[positionNum + 3].model.scale.z + loadedModels[positionNum + 1].size.z / 2);
+            loadedModels[positionNum + 3].model.position.z = -7.1-(loadedModels[positionNum + 1].size.z / 2 + loadedModels[positionNum + 4].model.scale.z / 2);
+            loadedModels[positionNum + 4].model.position.z = 7.1+(loadedModels[positionNum + 1].size.z / 2 + loadedModels[positionNum + 4].model.scale.z / 2);
+            loadedModels[positionNum + 0].model.position.z = -7.1-(loadedModels[positionNum + 0].size.z / 2 + loadedModels[positionNum + 3].model.scale.z + loadedModels[positionNum + 1].size.z / 2);
+            loadedModels[positionNum + 2].model.position.z = 7.1+(loadedModels[positionNum + 2].size.z / 2 + loadedModels[positionNum + 3].model.scale.z + loadedModels[positionNum + 1].size.z / 2);
 
         }
 
